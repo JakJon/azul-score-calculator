@@ -10,7 +10,6 @@ const Board = () => {
   const [score, setScore] = useState(0);
   const [rowTiles, setRowTiles] = useState(0);
   const [columnTiles, setColumnTiles] = useState(0);
-  const [individualTiles, setIndividualTiles] = useState(0);
   const [boardValues, setBoardValues] = useState<boolean[][]>(createEmptyBoard());
 
   function createEmptyBoard(): boolean[][] {
@@ -37,8 +36,7 @@ const Board = () => {
     }
 
     function calcRoundScore(): void {
-      calcRowAndIndividualTileScores();
-      calcColumnScores();
+      setScore(calcRowAndIndividualTileScores() + calcColumnScores());
     }
 
     //Looks for individual tiles and consecutive rows
