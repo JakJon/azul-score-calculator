@@ -1,0 +1,31 @@
+td {
+    padding: 25px;
+    border: 1px solid gray;
+    border-collapse: collapse;
+    border: 1px solid white;
+}
+
+.inactive {
+    opacity: .15;
+    border: 1px solid white;
+}
+
+.blue {
+    background: rgb(55, 55, 214);
+}
+
+.orange {
+    background: orange;
+}
+
+.red {
+    background: rgb(218, 47, 47);
+}
+
+.black {
+    background: rgb(31, 31, 31);
+}
+
+.teal {
+    background: rgb(3, 200, 200);
+}
