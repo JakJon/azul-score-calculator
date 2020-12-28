@@ -7,9 +7,10 @@ import Tile from "../tile/tile";
 
 
 const Board = () => {
-    const [boardValues, setBoardValues] = useState<boolean[][]>(createEmptyBoard());
+  const [score, setScore] = useState(0);
+  const [boardValues, setBoardValues] = useState<boolean[][]>(createEmptyBoard());
 
-    function createEmptyBoard(): boolean[][] {
+  function createEmptyBoard(): boolean[][] {
         let board: boolean[][] = []
 
         for (let y = 0; y < 5; y++) {
@@ -18,7 +19,6 @@ const Board = () => {
                 board![y][x] = false;
             }
         }
-        console.log("hit");
         return board;
     }
 
@@ -29,10 +29,107 @@ const Board = () => {
         console.log(boardValues);
     }
 
+    function startOver(): void {
+      window.location.reload();
+    }
 
+    function calcRoundScore(): void {
+      calcRowScores();
+    }
+
+    //Looks for individual tiles and consecutive rows
+    function calcRowScores(): void {
+      let totalRowsScore = 0;
+
+      for (let y = 0; y < 5; y++) {
+        let rowScore = 0;
+        for (let x = 0; x < 5; x++) {
+          let checkLeft = x !== 0;
+          let checkRight = x !== 4;
+          let checkUp = y !== 0;
+          let checkDown = y !== 4;
+
+          if (boardValues[y][x]) {
+            if (checkLeft) {
+              if (boardValues[y][x-1]) {
+                checkRight = false;
+              } 
+            }
+            if (checkRight) {
+              if (!boardValues[y][x+1]) {
+                if (checkUp) {
+                  if (!boardValues[y-1][x]) {
+                    if (checkDown) {
+                      if (!boardValues[y+1][x]) {
+                        // Individual active tile
+                        rowScore++;
+                      }
+                    } else if (y === 4) {
+                      // Individual active tile in bottom row
+                      rowScore++;
+                    }
+                  }
+                } else if (y === 0) {
+                  if (!boardValues[y+1][x]) {
+                    // Individual active tile in top row
+                    rowScore++;
+                  }
+                }
+              } else {
+                // Consecutive active tiles
+                rowScore += 2;
+                if (x+2 !== 5 ){
+                  if (boardValues[y][x+2]) {
+                    rowScore++;
+                    if (x+3 !== 5) {
+                      if (boardValues[y][x+3]) {
+                        rowScore++;
+                        if (x+4 !== 5) {
+                          if (boardValues[y][x+4]) {
+                            rowScore++;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            } else if (x === 4) {
+              if (!boardValues[y][x-1]) {
+                if (checkUp) {
+                  if (!boardValues[y-1][x]) {
+                    if (checkDown) {
+                      if (!boardValues[y+1][x]) {
+                        // Individual active tile in right column
+                        rowScore++;
+                      }
+                    } else if (y === 4) {
+                      // Individual active tile in bottom row and right column
+                      rowScore++;
+                    }
+                  }
+                } else if (y === 0) {
+                  if (!boardValues[y+1][x]) {
+                    // Individual active tile in top row and right column
+                    rowScore++;
+                  }
+                }
+              }
+            }
+          }
+        }
+        totalRowsScore += rowScore;
+      }
+      setScore(totalRowsScore);
+    }
+
+    function gameScore(): void {
+      setBoardValues(createEmptyBoard());
+    }
     
   return (
     <div className="board-container">
+      <h1>Total Score: {score}</h1>
       <table>
         <tbody>
           <tr>
@@ -72,6 +169,24 @@ const Board = () => {
           </tr>
         </tbody>
       </table>
+      <div className="floor-section">
+        <h2>Amount of Tiles on Floor</h2>
+        <select>
+          <option value={0}>0</option>
+          <option value={1}>1</option>
+          <option value={2}>2</option>
+          <option value={3}>3</option>
+          <option value={4}>4</option>
+          <option value={5}>5</option>
+          <option value={6}>6</option>
+          <option value={7}>7</option>
+        </select>
+      </div>
+      <div className="option-section">
+        <h3 onClick={() => calcRoundScore()} className="teal-option">End Round</h3>
+        <h3 onClick={() => gameScore()} className="red-option">End Game</h3>
+        <h3 onClick={() => startOver()} className="orange-option">Start Over</h3>
+      </div>
     </div>
   );
 }
