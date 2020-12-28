@@ -8,6 +8,9 @@ import Tile from "../tile/tile";
 
 const Board = () => {
   const [score, setScore] = useState(0);
+  const [rowTiles, setRowTiles] = useState(0);
+  const [columnTiles, setColumnTiles] = useState(0);
+  const [individualTiles, setIndividualTiles] = useState(0);
   const [boardValues, setBoardValues] = useState<boolean[][]>(createEmptyBoard());
 
   function createEmptyBoard(): boolean[][] {
@@ -34,11 +37,12 @@ const Board = () => {
     }
 
     function calcRoundScore(): void {
-      calcRowScores();
+      calcRowAndIndividualTileScores();
+      calcColumnScores();
     }
 
     //Looks for individual tiles and consecutive rows
-    function calcRowScores(): void {
+    function calcRowAndIndividualTileScores(): number {
       let totalRowsScore = 0;
 
       for (let y = 0; y < 5; y++) {
@@ -120,7 +124,50 @@ const Board = () => {
         }
         totalRowsScore += rowScore;
       }
-      setScore(totalRowsScore);
+      return totalRowsScore;
+    }
+
+    function calcColumnScores(): number {
+      let totalColumnsScore = 0;
+      for (let y = 0; y < 5; y++) {
+        let columnScore = 0;
+        for (let x = 0; x < 5; x++) {
+          let checkUp = y !== 0;
+          let checkDown = true;
+
+          if (checkUp) {
+            if (boardValues[y-1][x]) {
+              checkDown = false;
+            }
+          }
+          if (checkDown) {
+            if (boardValues[y][x]) {
+              if (y+1 !== 5) {
+                if (boardValues[y+1][x]) {
+                  columnScore+= 2;
+                  if (y+2 !== 5) {
+                    if (boardValues[y+2][x]) {
+                      columnScore++;
+                      if (y+3 !== 5) {
+                        if (boardValues[y+3][x]) {
+                          columnScore++;
+                          if (y+4 !== 5) {
+                            if (boardValues[y+4][x]) {
+                              columnScore++;
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        totalColumnsScore += columnScore;
+      }
+      return totalColumnsScore;
     }
 
     function gameScore(): void {
