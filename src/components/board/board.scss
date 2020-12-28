@@ -14,3 +14,19 @@ table {
 tr {
     display: flex;
 }
+
+.round-number, .tile-amount {
+    margin-bottom: 0;
+}
+
+.total-score, .floor-message {
+    margin-top: 0;
+}
+
+.end-game {
+    color: rgb(218, 47, 47);;
+}
+
+.start-over {
+    color: orange;
+}
