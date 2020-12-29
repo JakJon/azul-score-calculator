@@ -4,34 +4,44 @@ import "./board.scss";
 import { threadId } from "worker_threads";
 import { render } from "@testing-library/react";
 import Tile from "../tile/tile";
+import TileData from "../../models/tileData.interface";
 
 
 const Board = () => {
   const [score, setScore] = useState(0);
   const [scorePrefix, setScorePrefix] = useState("Total")
-  const [boardValues, setBoardValues] = useState<boolean[][]>(createEmptyBoard());
   const [roundCount, setRoundCount] = useState(1);
+  const [boardValues, setBoardValues] = useState<TileData[][]>(createEmptyBoard());
   const [floorMessage, setFloorMessage] = useState("");
   const [gameEnded, setGameEnded] = useState(false);
   const [completedRow, setCompletedRow] = useState(false);
   const [endPrompt, setEndPrompt] = useState(false);
   const [startOverPrompt, setStartOverPrompt] = useState(false);
 
-  function createEmptyBoard(): boolean[][] {
-        let board: boolean[][] = []
+  function createEmptyBoard(): TileData[][] {
+        let board: TileData[][] = [];
 
         for (let y = 0; y < 5; y++) {
-            board![y] = [];
-            for (let x = 0; x < 5; x++) {
-                board![y][x] = false;
-            }
-        }
+          board![y] = [];
+          for (let x = 0; x < 5; x++) {
+              board![y][x] = {active: false, checked: false, round: roundCount}
+          }
+      }
         return board;
+    }
+
+    function clearChecks(): void {
+      for (let y = 0; y < 5; y++) {
+        for (let x = 0; x < 5; x++) {
+            boardValues[y][x].checked = false;
+        }
+      } 
     }
 
     function activateTile(y: number, x: number): void {
         let board = boardValues;
-        board[y][x] = !board[y][x];
+        board[y][x].active = !board[y][x].active;
+        board[y][x].round = roundCount;
         setBoardValues(board);
     }
 
@@ -39,141 +49,140 @@ const Board = () => {
       window.location.reload();
     }
 
-    function calcRoundScore(): void {
-      if(calcRowAndIndividualTileScores() + calcColumnScores() + score - calcFloorScore() >= 0) {
-        setScore(calcRowAndIndividualTileScores() + calcColumnScores() + score - calcFloorScore());
-      } else {
-        setScore(0);
-      }
-      setRoundCount(1 + roundCount)
-    }
+    function calcRoundScore(): number {
+      let tempScore = 0;
 
-    //Looks for individual tiles and consecutive rows
-    function calcRowAndIndividualTileScores(): number {
-      let totalRowsScore = 0;
       for (let y = 0; y < 5; y++) {
-        let rowScore = 0;
         for (let x = 0; x < 5; x++) {
           let checkLeft = x !== 0;
           let checkRight = x !== 4;
           let checkUp = y !== 0;
           let checkDown = y !== 4;
-          if (boardValues[y][x]) {
+          let isRow = false;
+          let isColumn = false;
+
+          if (boardValues[y][x].active && !boardValues[y][x].checked && boardValues[y][x].round === roundCount) {
+            tempScore++;
+            
+            if (checkUp) {
+              if (boardValues[y-1][x].active){
+                tempScore++;
+                boardValues[y-1][x].checked = true;
+                isColumn = true;
+                if (y-2 !== -1) {
+                  if (boardValues[y-2][x].active) {
+                    tempScore++;
+                    boardValues[y-2][x].checked = true;
+                  }
+                  if (y-3 !== -1) {
+                    if (boardValues[y-3][x].active) {
+                      tempScore++;
+                      boardValues[y-3][x].checked = true;
+                    }
+                    if (y-4 !== -1) {
+                      if (boardValues[y-4][x].active) {
+                        tempScore++;
+                        boardValues[y-4][x].checked = true;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            if (checkDown) {
+              if (boardValues[y+1][x].active && boardValues[y+1][x].round !== roundCount){
+                tempScore++;
+                boardValues[y+1][x].checked = true;
+                isColumn = true;
+                if (y+2 !== 5) {
+                  if (boardValues[y+2][x].active && boardValues[y+2][x].round !== roundCount) {
+                    tempScore++;
+                    boardValues[y+2][x].checked = true;
+                  }
+                  if (y+3 !== 5) {
+                    if (boardValues[y+3][x].active && boardValues[y+3][x].round !== roundCount) {
+                      tempScore++;
+                      boardValues[y+3][x].checked = true;
+                    }
+                    if (y+4 !== 5) {
+                      if (boardValues[y+4][x].active && boardValues[y+1][x].round !== roundCount) {
+                        tempScore++;
+                        boardValues[y+4][x].checked = true;
+                      }
+                    }
+                  }
+                }
+              }
+            }
             if (checkLeft) {
-              if (boardValues[y][x-1]) {
-                checkRight = false;
-              } 
+              if (boardValues[y][x-1].active){
+                tempScore++;
+                boardValues[y][x-1].checked = true;
+                isRow = true;
+                if (x-2 !== -1) {
+                  if (boardValues[y][x-2].active) {
+                    tempScore++;
+                    boardValues[y][x-2].checked = true;
+                  }
+                  if (x-3 !== -1) {
+                    if (boardValues[y][x-3].active) {
+                      tempScore++;
+                      boardValues[y][x-3].checked = true;
+                    }
+                    if (x-4 !== -1) {
+                      if (boardValues[y][x-4].active) {
+                        tempScore++;
+                        boardValues[y][x-4].checked = true;
+                      }
+                    }
+                  }
+                }
+              }
             }
             if (checkRight) {
-              if (!boardValues[y][x+1]) {
-                if (checkUp) {
-                  if (!boardValues[y-1][x]) {
-                    if (checkDown) {
-                      if (!boardValues[y+1][x]) {
-                        // Individual active tile
-                        rowScore++;
-                      }
-                    } else if (y === 4) {
-                      // Individual active tile in bottom row
-                      rowScore++;
+              if (boardValues[y][x+1].active){
+                tempScore++;
+                boardValues[y][x+1].checked = true;
+                isRow = true;
+                if (x+2 !== 5) {
+                  if (boardValues[y][x+2].active) {
+                    boardValues[y][x+2].checked = true;
+                    tempScore++;
+                  }
+                  if (x+3 !== 5) {
+                    if (boardValues[y][x+3].active) {
+                      boardValues[y][x+3].checked = true;
+                      tempScore++;
                     }
-                  }
-                } else if (y === 0) {
-                  if (!boardValues[y+1][x]) {
-                    // Individual active tile in top row
-                    rowScore++;
-                  }
-                }
-              } else {
-                // Consecutive active tiles
-                rowScore += 2;
-                if (x+2 !== 5 ){
-                  if (boardValues[y][x+2]) {
-                    rowScore++;
-                    if (x+3 !== 5) {
-                      if (boardValues[y][x+3]) {
-                        rowScore++;
-                        if (x+4 !== 5) {
-                          if (boardValues[y][x+4]) {
-                            rowScore++;
-                          }
-                        }
+                    if (x+4 !== 5) {
+                      if (boardValues[y][x+4].active) {
+                        boardValues[y][x+4].checked = true;
+                        tempScore++;
                       }
                     }
-                  }
-                }
-              }
-            } else if (x === 4) {
-              if (!boardValues[y][x-1]) {
-                if (checkUp) {
-                  if (!boardValues[y-1][x]) {
-                    if (checkDown) {
-                      if (!boardValues[y+1][x]) {
-                        // Individual active tile in right column
-                        rowScore++;
-                      }
-                    } else if (y === 4) {
-                      // Individual active tile in bottom row and right column
-                      rowScore++;
-                    }
-                  }
-                } else if (y === 0) {
-                  if (!boardValues[y+1][x]) {
-                    // Individual active tile in top row and right column
-                    rowScore++;
                   }
                 }
               }
             }
           }
-        }
-        totalRowsScore += rowScore;
-      }
-      return totalRowsScore;
+          if (isRow && isColumn) {
+            tempScore++;
+          }
+        } 
+      } 
+      return tempScore;
     }
 
-    function calcColumnScores(): number {
-      let totalColumnsScore = 0;
-      for (let y = 0; y < 5; y++) {
-        let columnScore = 0;
-        for (let x = 0; x < 5; x++) {
-          let checkUp = y !== 0;
-          let checkDown = true;
-
-          if (checkUp) {
-            if (boardValues[y-1][x]) {
-              checkDown = false;
-            }
-          }
-          if (checkDown) {
-            if (boardValues[y][x]) {
-              if (y+1 !== 5) {
-                if (boardValues[y+1][x]) {
-                  columnScore+= 2;
-                  if (y+2 !== 5) {
-                    if (boardValues[y+2][x]) {
-                      columnScore++;
-                      if (y+3 !== 5) {
-                        if (boardValues[y+3][x]) {
-                          columnScore++;
-                          if (y+4 !== 5) {
-                            if (boardValues[y+4][x]) {
-                              columnScore++;
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        totalColumnsScore += columnScore;
-      }
-      return totalColumnsScore;
+    function getRoundScore(): void {
+      setScore(score + calcRoundScore() - calcFloorScore());
+      setRoundCount(1 + roundCount);
     }
+
+    useEffect(() => {
+      if (score < 0) {
+        setScore(0);
+      }
+    }, [score]);
 
     function calcFloorScore(): number {
       var floor = (document.getElementById("floor") as HTMLSelectElement);
@@ -228,37 +237,30 @@ const Board = () => {
       setScorePrefix("Final")
       setEndPrompt(false);
       setGameEnded(true);
-      console.log(calcFinalRoundScore());
-      console.log(fiveOfAKindCheck() + fullRowCheck() + fullColumnCheck())
-      setScore(score + calcFinalRoundScore() + fiveOfAKindCheck() + fullRowCheck() + fullColumnCheck());
-    }
-
-    function calcFinalRoundScore(): number {
-      let roundScore = calcRowAndIndividualTileScores() + calcColumnScores() - calcFloorScore();
-      return roundScore;
+      setScore(score + calcRoundScore() + fiveOfAKindCheck() + fullRowCheck() + fullColumnCheck());
     }
 
     function fiveOfAKindCheck(): number {
       let bonusPoints = 0;
 
       // Blues
-      if (boardValues[0][0] && boardValues[1][1] && boardValues[2][2] && boardValues[3][3] && boardValues[4][4]) {
+      if (boardValues[0][0].active && boardValues[1][1].active && boardValues[2][2].active && boardValues[3][3].active && boardValues[4][4].active) {
         bonusPoints += 10;
       }
       // Oranges
-      if (boardValues[0][1] && boardValues[1][2] && boardValues[2][3] && boardValues[3][4] && boardValues[4][0]) {
+      if (boardValues[0][1].active && boardValues[1][2].active && boardValues[2][3].active && boardValues[3][4].active && boardValues[4][0].active) {
         bonusPoints += 10;
       }
       // Reds
-      if (boardValues[0][2] && boardValues[1][3] && boardValues[2][4] && boardValues[3][0] && boardValues[4][1]) {
+      if (boardValues[0][2].active && boardValues[1][3].active && boardValues[2][4].active && boardValues[3][0].active && boardValues[4][1].active) {
         bonusPoints += 10;
       }
       // Blacks
-      if (boardValues[0][3] && boardValues[1][4] && boardValues[2][0] && boardValues[3][1] && boardValues[4][2]) {
+      if (boardValues[0][3].active && boardValues[1][4].active && boardValues[2][0].active && boardValues[3][1].active && boardValues[4][2].active) {
         bonusPoints += 10;
       }
       // Teals
-      if (boardValues[0][4] && boardValues[1][0] && boardValues[2][1] && boardValues[3][2] && boardValues[4][3]) {
+      if (boardValues[0][4].active && boardValues[1][0].active && boardValues[2][1].active && boardValues[3][2].active && boardValues[4][3].active) {
         bonusPoints += 10;
       }
       return bonusPoints;
@@ -266,19 +268,19 @@ const Board = () => {
 
     function fullRowCheck(): number {
       let bonusPoints = 0
-      if (boardValues[0][0] && boardValues[0][1] && boardValues[0][2] && boardValues[0][3] && boardValues[0][4]) {
+      if (boardValues[0][0].active && boardValues[0][1].active && boardValues[0][2].active && boardValues[0][3].active && boardValues[0][4].active) {
         bonusPoints += 2;
       }
-      if (boardValues[1][0] && boardValues[1][1] && boardValues[1][2] && boardValues[1][3] && boardValues[1][4]) {
+      if (boardValues[1][0].active && boardValues[1][1].active && boardValues[1][2].active && boardValues[1][3].active && boardValues[1][4].active) {
         bonusPoints += 2;
       }
-      if (boardValues[2][0] && boardValues[2][1] && boardValues[2][2] && boardValues[2][3] && boardValues[2][4]) {
+      if (boardValues[2][0].active && boardValues[2][1].active && boardValues[2][2].active && boardValues[2][3].active && boardValues[2][4].active) {
         bonusPoints += 2;
       }
-      if (boardValues[3][0] && boardValues[3][1] && boardValues[3][2] && boardValues[3][3] && boardValues[3][4]) {
+      if (boardValues[3][0].active && boardValues[3][1].active && boardValues[3][2].active && boardValues[3][3].active && boardValues[3][4].active) {
         bonusPoints += 2;
       }
-      if (boardValues[4][0] && boardValues[4][1] && boardValues[4][2] && boardValues[4][3] && boardValues[4][4]) {
+      if (boardValues[4][0].active && boardValues[4][1].active && boardValues[4][2].active && boardValues[4][3].active && boardValues[4][4].active) {
         bonusPoints += 2;
       }
       if (bonusPoints !== 0) {
@@ -290,19 +292,19 @@ const Board = () => {
     function fullColumnCheck(): number {
       let bonusPoints = 0;
 
-      if (boardValues[0][0] && boardValues[1][0] && boardValues[2][0] && boardValues[3][0] && boardValues[4][0]) {
+      if (boardValues[0][0].active && boardValues[1][0].active && boardValues[2][0].active && boardValues[3][0].active && boardValues[4][0].active) {
         bonusPoints += 7;
       }
-      if (boardValues[0][1] && boardValues[1][1] && boardValues[2][1] && boardValues[3][1] && boardValues[4][1]) {
+      if (boardValues[0][1].active && boardValues[1][1].active && boardValues[2][1].active && boardValues[3][1].active && boardValues[4][1].active) {
         bonusPoints += 7;
       }
-      if (boardValues[0][2] && boardValues[1][2] && boardValues[2][2] && boardValues[3][2] && boardValues[4][2]) {
+      if (boardValues[0][2].active && boardValues[1][2].active && boardValues[2][2].active && boardValues[3][2].active && boardValues[4][2].active) {
         bonusPoints += 7;
       }
-      if (boardValues[0][3] && boardValues[1][3] && boardValues[2][3] && boardValues[3][3] && boardValues[4][3]) {
+      if (boardValues[0][3].active && boardValues[1][3].active && boardValues[2][3].active && boardValues[3][3].active && boardValues[4][3].active) {
         bonusPoints += 7;
       }
-      if (boardValues[0][4] && boardValues[1][4] && boardValues[2][4] && boardValues[3][4] && boardValues[4][4]) {
+      if (boardValues[0][4].active && boardValues[1][4].active && boardValues[2][4].active && boardValues[3][4].active && boardValues[4][4].active) {
         bonusPoints += 7;
       }
       return bonusPoints;
@@ -331,39 +333,39 @@ const Board = () => {
       <table>
         <tbody>
           <tr>
-            <div onClick={() => activateTile(0,0)}><Tile active={boardValues[0][0]} color="blue"/></div>
-            <div onClick={() => activateTile(0,1)}><Tile active={boardValues[0][1]} color="orange"/></div>
-            <div onClick={() => activateTile(0,2)}><Tile active={boardValues[0][2]} color="red"/></div>
-            <div onClick={() => activateTile(0,3)}><Tile active={boardValues[0][3]} color="black"/></div>
-            <div onClick={() => activateTile(0,4)}><Tile active={boardValues[0][4]} color="teal"/></div>
+            <div onClick={() => activateTile(0,0)}><Tile active={boardValues[0][0].active} color="blue"/></div>
+            <div onClick={() => activateTile(0,1)}><Tile active={boardValues[0][1].active} color="orange"/></div>
+            <div onClick={() => activateTile(0,2)}><Tile active={boardValues[0][2].active} color="red"/></div>
+            <div onClick={() => activateTile(0,3)}><Tile active={boardValues[0][3].active} color="black"/></div>
+            <div onClick={() => activateTile(0,4)}><Tile active={boardValues[0][4].active} color="teal"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(1,0)}><Tile active={boardValues[1][0]} color="teal"/></div>
-            <div onClick={() => activateTile(1,1)}><Tile active={boardValues[1][1]} color="blue"/></div>
-            <div onClick={() => activateTile(1,2)}><Tile active={boardValues[1][2]} color="orange"/></div>
-            <div onClick={() => activateTile(1,3)}><Tile active={boardValues[1][3]} color="red"/></div>
-            <div onClick={() => activateTile(1,4)}><Tile active={boardValues[1][4]} color="black"/></div>
+            <div onClick={() => activateTile(1,0)}><Tile active={boardValues[1][0].active} color="teal"/></div>
+            <div onClick={() => activateTile(1,1)}><Tile active={boardValues[1][1].active} color="blue"/></div>
+            <div onClick={() => activateTile(1,2)}><Tile active={boardValues[1][2].active} color="orange"/></div>
+            <div onClick={() => activateTile(1,3)}><Tile active={boardValues[1][3].active} color="red"/></div>
+            <div onClick={() => activateTile(1,4)}><Tile active={boardValues[1][4].active} color="black"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(2,0)}><Tile active={boardValues[2][0]} color="black"/></div>
-            <div onClick={() => activateTile(2,1)}><Tile active={boardValues[2][1]} color="teal"/></div>
-            <div onClick={() => activateTile(2,2)}><Tile active={boardValues[2][2]} color="blue"/></div>
-            <div onClick={() => activateTile(2,3)}><Tile active={boardValues[2][3]} color="orange"/></div>
-            <div onClick={() => activateTile(2,4)}><Tile active={boardValues[2][4]} color="red"/></div>
+            <div onClick={() => activateTile(2,0)}><Tile active={boardValues[2][0].active} color="black"/></div>
+            <div onClick={() => activateTile(2,1)}><Tile active={boardValues[2][1].active} color="teal"/></div>
+            <div onClick={() => activateTile(2,2)}><Tile active={boardValues[2][2].active} color="blue"/></div>
+            <div onClick={() => activateTile(2,3)}><Tile active={boardValues[2][3].active} color="orange"/></div>
+            <div onClick={() => activateTile(2,4)}><Tile active={boardValues[2][4].active} color="red"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(3,0)}><Tile active={boardValues[3][0]} color="red"/></div>
-            <div onClick={() => activateTile(3,1)}><Tile active={boardValues[3][1]} color="black"/></div>
-            <div onClick={() => activateTile(3,2)}><Tile active={boardValues[3][2]} color="teal"/></div>
-            <div onClick={() => activateTile(3,3)}><Tile active={boardValues[3][3]} color="blue"/></div>
-            <div onClick={() => activateTile(3,4)}><Tile active={boardValues[3][4]} color="orange"/></div>
+            <div onClick={() => activateTile(3,0)}><Tile active={boardValues[3][0].active} color="red"/></div>
+            <div onClick={() => activateTile(3,1)}><Tile active={boardValues[3][1].active} color="black"/></div>
+            <div onClick={() => activateTile(3,2)}><Tile active={boardValues[3][2].active} color="teal"/></div>
+            <div onClick={() => activateTile(3,3)}><Tile active={boardValues[3][3].active} color="blue"/></div>
+            <div onClick={() => activateTile(3,4)}><Tile active={boardValues[3][4].active} color="orange"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(4,0)}><Tile active={boardValues[4][0]} color="orange"/></div>
-            <div onClick={() => activateTile(4,1)}><Tile active={boardValues[4][1]} color="red"/></div>
-            <div onClick={() => activateTile(4,2)}><Tile active={boardValues[4][2]} color="black"/></div>
-            <div onClick={() => activateTile(4,3)}><Tile active={boardValues[4][3]} color="teal"/></div>
-            <div onClick={() => activateTile(4,4)}><Tile active={boardValues[4][4]} color="blue"/></div>
+            <div onClick={() => activateTile(4,0)}><Tile active={boardValues[4][0].active} color="orange"/></div>
+            <div onClick={() => activateTile(4,1)}><Tile active={boardValues[4][1].active} color="red"/></div>
+            <div onClick={() => activateTile(4,2)}><Tile active={boardValues[4][2].active} color="black"/></div>
+            <div onClick={() => activateTile(4,3)}><Tile active={boardValues[4][3].active} color="teal"/></div>
+            <div onClick={() => activateTile(4,4)}><Tile active={boardValues[4][4].active} color="blue"/></div>
           </tr>
         </tbody>
       </table>
@@ -383,7 +385,7 @@ const Board = () => {
       <h2 className="floor-message">{floorMessage}</h2>
       <div className="option-section">
         {!endPrompt && !startOverPrompt && <>
-        {!gameEnded && <h3 onClick={() => calcRoundScore()} className="teal-option">End Round</h3>}
+        {!gameEnded && <h3 onClick={() => getRoundScore()} className="teal-option">End Round</h3>}
         {roundCount >= 5 && !gameEnded && <h3 onClick={() => showEndPrompt(true)} className="red-option">End Game</h3>}
         {roundCount >= 2 && <h3 onClick={() => showStartOverPrompt(true)} className="orange-option">Start Over</h3>}
         </> }
