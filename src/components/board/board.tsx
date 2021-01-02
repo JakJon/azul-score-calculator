@@ -61,10 +61,11 @@ const Board = () => {
           let isRow = false;
           let isColumn = false;
 
-          if (boardValues[y][x].active && !boardValues[y][x].checked && boardValues[y][x].round === roundCount) {
+          if (boardValues[y][x].active && boardValues[y][x].round === roundCount) {
             tempScore++;
             
             if (checkUp) {
+              console.log(boardValues[y][x] + " up");
               if (boardValues[y-1][x].active){
                 tempScore++;
                 boardValues[y-1][x].checked = true;
@@ -73,16 +74,16 @@ const Board = () => {
                   if (boardValues[y-2][x].active) {
                     tempScore++;
                     boardValues[y-2][x].checked = true;
-                  }
-                  if (y-3 !== -1) {
-                    if (boardValues[y-3][x].active) {
-                      tempScore++;
-                      boardValues[y-3][x].checked = true;
-                    }
-                    if (y-4 !== -1) {
-                      if (boardValues[y-4][x].active) {
+                    if (y-3 !== -1) {
+                      if (boardValues[y-3][x].active) {
                         tempScore++;
-                        boardValues[y-4][x].checked = true;
+                        boardValues[y-3][x].checked = true;
+                        if (y-4 !== -1) {
+                          if (boardValues[y-4][x].active) {
+                            tempScore++;
+                            boardValues[y-4][x].checked = true;
+                          }
+                        }
                       }
                     }
                   }
@@ -90,7 +91,9 @@ const Board = () => {
               }
             }
             if (checkDown) {
+              console.log(boardValues[y][x] + " down");
               if (boardValues[y+1][x].active && boardValues[y+1][x].round !== roundCount){
+                console.log("tile round: " + boardValues[y+1][x].round + " board round: " + roundCount);
                 tempScore++;
                 boardValues[y+1][x].checked = true;
                 isColumn = true;
@@ -98,16 +101,16 @@ const Board = () => {
                   if (boardValues[y+2][x].active && boardValues[y+2][x].round !== roundCount) {
                     tempScore++;
                     boardValues[y+2][x].checked = true;
-                  }
-                  if (y+3 !== 5) {
-                    if (boardValues[y+3][x].active && boardValues[y+3][x].round !== roundCount) {
-                      tempScore++;
-                      boardValues[y+3][x].checked = true;
-                    }
-                    if (y+4 !== 5) {
-                      if (boardValues[y+4][x].active && boardValues[y+1][x].round !== roundCount) {
+                    if (y+3 !== 5) {
+                      if (boardValues[y+3][x].active && boardValues[y+3][x].round !== roundCount) {
                         tempScore++;
-                        boardValues[y+4][x].checked = true;
+                        boardValues[y+3][x].checked = true;
+                        if (y+4 !== 5) {
+                          if (boardValues[y+4][x].active && boardValues[y+4][x].round !== roundCount) {
+                            tempScore++;
+                            boardValues[y+4][x].checked = true;
+                          }
+                        }
                       }
                     }
                   }
@@ -115,6 +118,7 @@ const Board = () => {
               }
             }
             if (checkLeft) {
+              console.log(boardValues[y][x] + " left");
               if (boardValues[y][x-1].active){
                 tempScore++;
                 boardValues[y][x-1].checked = true;
@@ -123,16 +127,16 @@ const Board = () => {
                   if (boardValues[y][x-2].active) {
                     tempScore++;
                     boardValues[y][x-2].checked = true;
-                  }
-                  if (x-3 !== -1) {
-                    if (boardValues[y][x-3].active) {
-                      tempScore++;
-                      boardValues[y][x-3].checked = true;
-                    }
-                    if (x-4 !== -1) {
-                      if (boardValues[y][x-4].active) {
+                    if (x-3 !== -1) {
+                      if (boardValues[y][x-3].active) {
                         tempScore++;
-                        boardValues[y][x-4].checked = true;
+                        boardValues[y][x-3].checked = true;
+                        if (x-4 !== -1) {
+                          if (boardValues[y][x-4].active) {
+                            tempScore++;
+                            boardValues[y][x-4].checked = true;
+                          }
+                        }
                       }
                     }
                   }
@@ -140,6 +144,8 @@ const Board = () => {
               }
             }
             if (checkRight) {
+              console.log(boardValues[y][x] + " right");
+
               if (boardValues[y][x+1].active){
                 tempScore++;
                 boardValues[y][x+1].checked = true;
@@ -148,16 +154,16 @@ const Board = () => {
                   if (boardValues[y][x+2].active) {
                     boardValues[y][x+2].checked = true;
                     tempScore++;
-                  }
-                  if (x+3 !== 5) {
-                    if (boardValues[y][x+3].active) {
-                      boardValues[y][x+3].checked = true;
-                      tempScore++;
-                    }
-                    if (x+4 !== 5) {
-                      if (boardValues[y][x+4].active) {
-                        boardValues[y][x+4].checked = true;
+                    if (x+3 !== 5) {
+                      if (boardValues[y][x+3].active) {
+                        boardValues[y][x+3].checked = true;
                         tempScore++;
+                        if (x+4 !== 5) {
+                          if (boardValues[y][x+4].active) {
+                            boardValues[y][x+4].checked = true;
+                            tempScore++;
+                          }
+                        }
                       }
                     }
                   }
@@ -166,8 +172,10 @@ const Board = () => {
             }
           }
           if (isRow && isColumn) {
+            console.log(boardValues[y][x] + " row and col");
             tempScore++;
           }
+          console.log(tempScore);
         } 
       } 
       return tempScore;
