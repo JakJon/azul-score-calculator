@@ -11,6 +11,10 @@ td {
     animation: fade-out .4s;
 }
 
+.current {
+    border-color: blueviolet;
+}
+
 .active {
     animation: fade-in .4s;
 }

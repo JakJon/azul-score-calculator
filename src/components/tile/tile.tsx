@@ -4,19 +4,31 @@ import "./tile.scss";
 interface TileProps {
   color: string;
   active: boolean;
+  roundPlaced: number;
+  currentRound: number;
 }
 
 const Tile = (tileProps: TileProps) => {
   const [placed, setPlaced] = useState(tileProps.active);
+  const [className, setClassName] = useState("inactive ")
+
+  useEffect(() => {
+
+    console.log(tileProps.active + " " + tileProps.currentRound + " " + tileProps.roundPlaced);
+  }, [tileProps.active, tileProps.roundPlaced, tileProps.currentRound]);
 
   return (
     <td
-      className={
+      className=
+      {
         placed
-          ? "active " + tileProps.color
-          : "inactive " + tileProps.color }
-      onClick={() => setPlaced(!placed)}>
-    </td>
+          ? tileProps.roundPlaced === tileProps.currentRound
+            ? "current active " + tileProps.color
+            : "active " + tileProps.color
+          : "inactive " + tileProps.color
+      }
+      onClick={() => setPlaced(!placed)}
+    ></td>
   );
 };
 

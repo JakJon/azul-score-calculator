@@ -93,7 +93,6 @@ const Board = () => {
             if (checkDown) {
               console.log(boardValues[y][x] + " down");
               if (boardValues[y+1][x].active && boardValues[y+1][x].round !== roundCount){
-                console.log("tile round: " + boardValues[y+1][x].round + " board round: " + roundCount);
                 tempScore++;
                 boardValues[y+1][x].checked = true;
                 isColumn = true;
@@ -172,10 +171,8 @@ const Board = () => {
             }
           }
           if (isRow && isColumn) {
-            console.log(boardValues[y][x] + " row and col");
             tempScore++;
           }
-          console.log(tempScore);
         } 
       } 
       return tempScore;
@@ -184,6 +181,7 @@ const Board = () => {
     function getRoundScore(): void {
       setScore(score + calcRoundScore() - calcFloorScore());
       setRoundCount(1 + roundCount);
+      clearFloorTiles();
     }
 
     useEffect(() => {
@@ -333,6 +331,12 @@ const Board = () => {
         setStartOverPrompt(false);
       }
     }
+
+    function clearFloorTiles(): void {
+      var floor = (document.getElementById("floor") as HTMLSelectElement);
+      floor.value = "0";
+      setFloorMessage("")
+    }
     
   return (
     <div className="board-container">
@@ -341,43 +345,43 @@ const Board = () => {
       <table>
         <tbody>
           <tr>
-            <div onClick={() => activateTile(0,0)}><Tile active={boardValues[0][0].active} color="blue"/></div>
-            <div onClick={() => activateTile(0,1)}><Tile active={boardValues[0][1].active} color="orange"/></div>
-            <div onClick={() => activateTile(0,2)}><Tile active={boardValues[0][2].active} color="red"/></div>
-            <div onClick={() => activateTile(0,3)}><Tile active={boardValues[0][3].active} color="black"/></div>
-            <div onClick={() => activateTile(0,4)}><Tile active={boardValues[0][4].active} color="teal"/></div>
+            <div onClick={() => activateTile(0,0)}><Tile active={boardValues[0][0].active} roundPlaced={boardValues[0][0].round} currentRound={roundCount} color="blue"/></div>
+            <div onClick={() => activateTile(0,1)}><Tile active={boardValues[0][1].active} roundPlaced={boardValues[0][1].round} currentRound={roundCount} color="orange"/></div>
+            <div onClick={() => activateTile(0,2)}><Tile active={boardValues[0][2].active} roundPlaced={boardValues[0][2].round} currentRound={roundCount} color="red"/></div>
+            <div onClick={() => activateTile(0,3)}><Tile active={boardValues[0][3].active} roundPlaced={boardValues[0][3].round} currentRound={roundCount} color="black"/></div>
+            <div onClick={() => activateTile(0,4)}><Tile active={boardValues[0][4].active} roundPlaced={boardValues[0][4].round} currentRound={roundCount} color="teal"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(1,0)}><Tile active={boardValues[1][0].active} color="teal"/></div>
-            <div onClick={() => activateTile(1,1)}><Tile active={boardValues[1][1].active} color="blue"/></div>
-            <div onClick={() => activateTile(1,2)}><Tile active={boardValues[1][2].active} color="orange"/></div>
-            <div onClick={() => activateTile(1,3)}><Tile active={boardValues[1][3].active} color="red"/></div>
-            <div onClick={() => activateTile(1,4)}><Tile active={boardValues[1][4].active} color="black"/></div>
+            <div onClick={() => activateTile(1,0)}><Tile active={boardValues[1][0].active} roundPlaced={boardValues[1][0].round} currentRound={roundCount} color="teal"/></div>
+            <div onClick={() => activateTile(1,1)}><Tile active={boardValues[1][1].active} roundPlaced={boardValues[1][1].round} currentRound={roundCount} color="blue"/></div>
+            <div onClick={() => activateTile(1,2)}><Tile active={boardValues[1][2].active} roundPlaced={boardValues[1][2].round} currentRound={roundCount} color="orange"/></div>
+            <div onClick={() => activateTile(1,3)}><Tile active={boardValues[1][3].active} roundPlaced={boardValues[1][3].round} currentRound={roundCount} color="red"/></div>
+            <div onClick={() => activateTile(1,4)}><Tile active={boardValues[1][4].active} roundPlaced={boardValues[1][4].round} currentRound={roundCount} color="black"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(2,0)}><Tile active={boardValues[2][0].active} color="black"/></div>
-            <div onClick={() => activateTile(2,1)}><Tile active={boardValues[2][1].active} color="teal"/></div>
-            <div onClick={() => activateTile(2,2)}><Tile active={boardValues[2][2].active} color="blue"/></div>
-            <div onClick={() => activateTile(2,3)}><Tile active={boardValues[2][3].active} color="orange"/></div>
-            <div onClick={() => activateTile(2,4)}><Tile active={boardValues[2][4].active} color="red"/></div>
+            <div onClick={() => activateTile(2,0)}><Tile active={boardValues[2][0].active} roundPlaced={boardValues[2][0].round} currentRound={roundCount} color="black"/></div>
+            <div onClick={() => activateTile(2,1)}><Tile active={boardValues[2][1].active} roundPlaced={boardValues[2][1].round} currentRound={roundCount} color="teal"/></div>
+            <div onClick={() => activateTile(2,2)}><Tile active={boardValues[2][2].active} roundPlaced={boardValues[2][2].round} currentRound={roundCount} color="blue"/></div>
+            <div onClick={() => activateTile(2,3)}><Tile active={boardValues[2][3].active} roundPlaced={boardValues[2][3].round} currentRound={roundCount} color="orange"/></div>
+            <div onClick={() => activateTile(2,4)}><Tile active={boardValues[2][4].active} roundPlaced={boardValues[2][4].round} currentRound={roundCount} color="red"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(3,0)}><Tile active={boardValues[3][0].active} color="red"/></div>
-            <div onClick={() => activateTile(3,1)}><Tile active={boardValues[3][1].active} color="black"/></div>
-            <div onClick={() => activateTile(3,2)}><Tile active={boardValues[3][2].active} color="teal"/></div>
-            <div onClick={() => activateTile(3,3)}><Tile active={boardValues[3][3].active} color="blue"/></div>
-            <div onClick={() => activateTile(3,4)}><Tile active={boardValues[3][4].active} color="orange"/></div>
+            <div onClick={() => activateTile(3,0)}><Tile active={boardValues[3][0].active} roundPlaced={boardValues[3][0].round} currentRound={roundCount} color="red"/></div>
+            <div onClick={() => activateTile(3,1)}><Tile active={boardValues[3][1].active} roundPlaced={boardValues[3][1].round} currentRound={roundCount} color="black"/></div>
+            <div onClick={() => activateTile(3,2)}><Tile active={boardValues[3][2].active} roundPlaced={boardValues[3][2].round} currentRound={roundCount} color="teal"/></div>
+            <div onClick={() => activateTile(3,3)}><Tile active={boardValues[3][3].active} roundPlaced={boardValues[3][3].round} currentRound={roundCount} color="blue"/></div>
+            <div onClick={() => activateTile(3,4)}><Tile active={boardValues[3][4].active} roundPlaced={boardValues[3][4].round} currentRound={roundCount} color="orange"/></div>
           </tr>
           <tr>
-            <div onClick={() => activateTile(4,0)}><Tile active={boardValues[4][0].active} color="orange"/></div>
-            <div onClick={() => activateTile(4,1)}><Tile active={boardValues[4][1].active} color="red"/></div>
-            <div onClick={() => activateTile(4,2)}><Tile active={boardValues[4][2].active} color="black"/></div>
-            <div onClick={() => activateTile(4,3)}><Tile active={boardValues[4][3].active} color="teal"/></div>
-            <div onClick={() => activateTile(4,4)}><Tile active={boardValues[4][4].active} color="blue"/></div>
+            <div onClick={() => activateTile(4,0)}><Tile active={boardValues[4][0].active} roundPlaced={boardValues[4][0].round} currentRound={roundCount} color="orange"/></div>
+            <div onClick={() => activateTile(4,1)}><Tile active={boardValues[4][1].active} roundPlaced={boardValues[4][1].round} currentRound={roundCount} color="red"/></div>
+            <div onClick={() => activateTile(4,2)}><Tile active={boardValues[4][2].active} roundPlaced={boardValues[4][2].round} currentRound={roundCount} color="black"/></div>
+            <div onClick={() => activateTile(4,3)}><Tile active={boardValues[4][3].active} roundPlaced={boardValues[4][3].round} currentRound={roundCount} color="teal"/></div>
+            <div onClick={() => activateTile(4,4)}><Tile active={boardValues[4][4].active} roundPlaced={boardValues[4][4].round} currentRound={roundCount} color="blue"/></div>
           </tr>
         </tbody>
       </table>
-      <div onClick={() => calcFloorScore()} className="floor-section">
+      <div onMouseLeave={() => calcFloorScore()} onMouseUp={() => calcFloorScore()} onMouseDown={() => calcFloorScore()} onTouchEnd={() => calcFloorScore()} onTouchCancel={() => calcFloorScore()} onClick={() => calcFloorScore()} className="floor-section">
         <h2 className="tile-amount">Amount of Tiles on Floor</h2>
         <select id="floor">
           <option value={0}>0</option>
