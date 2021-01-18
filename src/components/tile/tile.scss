@@ -11,9 +11,9 @@ td {
     animation: fade-out .4s;
 }
 
-.current {
-    border-color: blueviolet;
-}
+// .current {
+//     border-color: blueviolet;
+// }
 
 .active {
     animation: fade-in .4s;
@@ -24,7 +24,9 @@ td {
 }
 
 .orange {
-    background: orange;
+    background-image: url('../../assets/orange-tile.svg');
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .red {
@@ -32,11 +34,15 @@ td {
 }
 
 .black {
-    background: rgb(31, 31, 31);
+    background-image: url('../../assets/black-tile.svg');
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .teal {
-    background: rgb(3, 200, 200);
+    background-image: url('../../assets/aqua-tile.svg');
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 @keyframes fade-in {
